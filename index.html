@@ -4,7 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hyperline Express – Route Price Calculator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">// Ensure Calculate works even if earlier listeners failed
+  window.addEventListener('load', function(){
+    var b = document.getElementById('calcBtn');
+    if (b) {
+      b.onclick = async function(){
+        try {
+          var s = document.getElementById('status');
+          s.textContent = 'Calculating…';
+          var st = await calc();
+          s.textContent = st ? 'Calculated ✔' : 'Check inputs';
+          setTimeout(function(){ s.textContent=''; }, 1500);
+        } catch(e){ console.error(e); }
+      };
+    }
+  });
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
