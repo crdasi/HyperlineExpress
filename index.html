@@ -23,106 +23,97 @@
       border-radius: 0.5rem;
       font-weight: 600;
     }
-    .btn:hover {
-      background: #2563eb;
-    }
+    .btn:hover { background: #2563eb; }
   </style>
 </head>
 <body class="p-6">
 
-  <div class="max-w-3xl mx-auto space-y-6">
+  <div class="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
 
-    <h1 class="text-3xl font-extrabold text-center text-blue-900">Hyperline Express</h1>
-    <p class="text-center text-blue-800">Fast · Flexible · Secure</p>
+    <!-- Calculator -->
+    <div class="lg:col-span-2 space-y-6">
+      <h1 class="text-3xl font-extrabold text-blue-900 text-center">Hyperline Express</h1>
+      <p class="text-center text-blue-800">Fast · Flexible · Secure</p>
 
-    <!-- Form -->
-    <div class="card space-y-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium">Origin</label>
-          <input id="origin" list="hublist" class="border px-2 py-1 rounded w-full" placeholder="e.g. Jita" />
+      <div class="card space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Origin</label>
+            <input id="origin" class="border px-2 py-1 rounded w-full" placeholder="e.g. Jita" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Destination</label>
+            <input id="destination" class="border px-2 py-1 rounded w-full" placeholder="e.g. Amarr" />
+          </div>
         </div>
         <div>
-          <label class="block text-sm font-medium">Destination</label>
-          <input id="destination" list="hublist" class="border px-2 py-1 rounded w-full" placeholder="e.g. Amarr" />
+          <label class="block text-sm font-medium">Ship Type</label>
+          <select id="ship" class="border px-2 py-1 rounded w-full">
+            <option value="BRDST">BR/DST (≤50k m³, ≤1.5B collat.)</option>
+            <option value="FREIGHTER">Freighter (≤350k m³, ≤1B collat., HS only)</option>
+          </select>
         </div>
-      </div>
-      <div>
-        <label class="block text-sm font-medium">Ship Type</label>
-        <select id="ship" class="border px-2 py-1 rounded w-full">
-          <option value="BRDST">BR/DST (≤50k m³, ≤1.5B collat.)</option>
-          <option value="FREIGHTER">Freighter (≤350k m³, ≤1B collat., HS only)</option>
-        </select>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">HS Jumps</label>
+            <input id="hsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">LS/NS Jumps</label>
+            <input id="lsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+          </div>
+        </div>
         <div>
-          <label class="block text-sm font-medium">HS Jumps</label>
-          <input id="hsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+          <label class="block text-sm font-medium">Speed</label>
+          <select id="speed" class="border px-2 py-1 rounded w-full">
+            <option value="standard">Standard (48–72h)</option>
+            <option value="sameday">Same-day (+25%)</option>
+            <option value="express">Express (+100%)</option>
+          </select>
         </div>
-        <div>
-          <label class="block text-sm font-medium">LS/NS Jumps</label>
-          <input id="lsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+        <div class="flex items-center gap-3">
+          <label><input id="roundtrip" type="checkbox"> Round trip</label>
+          <label><input id="partner20" type="checkbox"> Partner discount (−20%)</label>
+        </div>
+        <button id="calcBtn" class="btn w-full">Calculate</button>
+      </div>
+
+      <div class="card">
+        <h2 class="text-xl font-bold text-blue-900 mb-2">Result</h2>
+        <div id="result" class="text-gray-800">Fill the form and press Calculate.</div>
+        <div id="partnerMsg" class="text-green-700 font-semibold mt-3 hidden">
+          You are an official partner of Hyperline Express
         </div>
       </div>
-      <div>
-        <label class="block text-sm font-medium">Speed</label>
-        <select id="speed" class="border px-2 py-1 rounded w-full">
-          <option value="standard">Standard (48–72h)</option>
-          <option value="sameday">Same-day (+25%)</option>
-          <option value="express">Express (+100%)</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-3">
-        <label><input id="roundtrip" type="checkbox"> Round trip</label>
-        <label><input id="partner20" type="checkbox"> Partner discount (−20%)</label>
-      </div>
-      <button id="calcBtn" class="btn w-full">Calculate</button>
     </div>
 
-    <!-- Result -->
-    <div class="card">
-      <h2 class="text-xl font-bold text-blue-900 mb-2">Result</h2>
-      <div id="result" class="text-gray-800">Fill the form and press Calculate.</div>
-      <div id="partnerMsg" class="text-green-700 font-semibold mt-3 hidden">
-        You are an official partner of Hyperline Express
+    <!-- Aside with fixed hub routes -->
+    <aside class="card space-y-4">
+      <h2 class="text-xl font-bold text-blue-900">Fixed Hub Routes</h2>
+      <p class="text-sm text-gray-700">For reference, our standard hub-to-hub prices:</p>
+      <div>
+        <h3 class="font-semibold">BR / DST (≤50k m³, ≤1.5B collat.)</h3>
+        <ul class="list-disc ml-5 text-sm text-gray-700">
+          <li>Jita ↔ Amarr: 50M / 90M / 150M</li>
+          <li>Jita ↔ Dodixie: 25M / 68M / 125M</li>
+          <li>Jita ↔ Hek: 30M / 60M / 110M</li>
+          <li>Jita ↔ Rens: 25M / 52M / 90M</li>
+        </ul>
       </div>
-    </div>
+      <div>
+        <h3 class="font-semibold">Freighter (≤350k m³, ≤1B collat.)</h3>
+        <ul class="list-disc ml-5 text-sm text-gray-700">
+          <li>Jita ↔ Amarr: 100M / 150M / 250M</li>
+          <li>Jita ↔ Dodixie: 40M / 110M / 190M</li>
+          <li>Jita ↔ Hek: 55M / 119M / 170M</li>
+          <li>Jita ↔ Rens: 50M / 109M / 160M</li>
+        </ul>
+      </div>
+    </aside>
 
   </div>
 
-  <datalist id="hublist">
-    <option value="Jita"></option>
-    <option value="Amarr"></option>
-    <option value="Dodixie"></option>
-    <option value="Hek"></option>
-    <option value="Rens"></option>
-    <option value="Parchanier"></option>
-  </datalist>
-
   <script>
-    function parseISK(val) {
-      if (!val) return 0;
-      val = val.toLowerCase().replace(/\s/g,'');
-      let mult = 1;
-      if (val.endsWith('b')) mult = 1e9;
-      else if (val.endsWith('m')) mult = 1e6;
-      else if (val.endsWith('k')) mult = 1e3;
-      return parseFloat(val.replace(/[^0-9.]/g,'')) * mult || 0;
-    }
-
-    const FIXED_BRDST = {
-      "jita-amarr": {standard:50, sameday:90, express:150},
-      "jita-dodixie": {standard:25, sameday:68, express:125},
-      "jita-hek": {standard:30, sameday:60, express:110},
-      "jita-rens": {standard:25, sameday:52, express:90}
-    };
-    const FIXED_FREIGHTER = {
-      "jita-amarr": {standard:100, sameday:150, express:250},
-      "jita-dodixie": {standard:40, sameday:110, express:190},
-      "jita-hek": {standard:55, sameday:119, express:170},
-      "jita-rens": {standard:50, sameday:109, express:160}
-    };
-
     const RATES = {
       BRDST: {HS:3, LS:6, MIN:20},
       FREIGHTER: {HS:4, MIN:30}
@@ -130,8 +121,8 @@
     const SPEED_FACTOR = {standard:1, sameday:1.25, express:2};
 
     function calc() {
-      const origin = document.getElementById('origin').value.trim().toLowerCase();
-      const dest = document.getElementById('destination').value.trim().toLowerCase();
+      const origin = document.getElementById('origin').value.trim();
+      const dest = document.getElementById('destination').value.trim();
       const ship = document.getElementById('ship').value;
       const hs = Number(document.getElementById('hsJumps').value || 0);
       const ls = Number(document.getElementById('lsJumps').value || 0);
@@ -140,29 +131,19 @@
       const roundtrip = document.getElementById('roundtrip').checked;
       const partner = document.getElementById('partner20').checked;
 
-      let legM = null;
-      const key = [origin, dest].sort().join("-");
-      if (ship === "BRDST" && FIXED_BRDST[key]) {
-        legM = FIXED_BRDST[key][speed];
-      }
-      if (ship === "FREIGHTER" && FIXED_FREIGHTER[key]) {
-        legM = FIXED_FREIGHTER[key][speed];
-      }
-
-      if (legM === null) {
-        if (ship === "BRDST") {
-          legM = hs * RATES.BRDST.HS + ls * RATES.BRDST.LS;
-          legM = Math.max(legM, RATES.BRDST.MIN);
-        } else {
-          if (ls > 0) {
-            document.getElementById('result').innerHTML = "<span class='text-red-600'>Freighter is HS only.</span>";
-            return;
-          }
-          legM = hs * RATES.FREIGHTER.HS;
-          legM = Math.max(legM, RATES.FREIGHTER.MIN);
+      let legM = 0;
+      if (ship === "BRDST") {
+        legM = hs * RATES.BRDST.HS + ls * RATES.BRDST.LS;
+        legM = Math.max(legM, RATES.BRDST.MIN);
+      } else {
+        if (ls > 0) {
+          document.getElementById('result').innerHTML = "<span class='text-red-600'>Freighter is HS only.</span>";
+          return;
         }
-        legM *= (SPEED_FACTOR[speed] || 1);
+        legM = hs * RATES.FREIGHTER.HS;
+        legM = Math.max(legM, RATES.FREIGHTER.MIN);
       }
+      legM *= (SPEED_FACTOR[speed] || 1);
 
       let total = legM;
       if (roundtrip) total += legM;
@@ -173,7 +154,7 @@
         <div class="text-sm text-gray-700">
           ${origin} → ${dest} · ${ship} · ${speed} · Jumps: ${jumps || "N/A"} ${roundtrip?"· Round trip":""}
         </div>
-        <div class="text-sm text-gray-600">Leg price: ${legM}M</div>
+        <div class="text-sm text-gray-600">Leg price: ${legM.toFixed(1)}M</div>
       `;
       document.getElementById('partnerMsg').classList.toggle('hidden', !partner);
     }
