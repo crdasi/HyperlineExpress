@@ -7,69 +7,94 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f7e7a3; /* amarillo suave */
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #fdf6d9, #f7e7a3);
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 1rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      padding: 1.5rem;
     }
     .btn {
       background: #1e40af; /* azul */
       color: white;
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
+      font-weight: 600;
+    }
+    .btn:hover {
+      background: #2563eb;
     }
   </style>
 </head>
 <body class="p-6">
 
-  <h1 class="text-2xl font-bold mb-4" style="color:#1e40af">Hyperline Express</h1>
+  <div class="max-w-2xl mx-auto space-y-6">
 
-  <div class="space-y-3">
-    <div>
-      <label>Origin</label>
-      <input id="origin" class="border px-2 py-1 rounded w-full" placeholder="e.g. Jita" />
+    <h1 class="text-3xl font-extrabold text-center text-blue-900">Hyperline Express</h1>
+    <p class="text-center text-blue-800">Fast · Flexible · Secure</p>
+
+    <!-- Card form -->
+    <div class="card space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Origin</label>
+        <input id="origin" class="border px-2 py-1 rounded w-full" placeholder="e.g. Jita" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Destination</label>
+        <input id="destination" class="border px-2 py-1 rounded w-full" placeholder="e.g. Amarr" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Ship Type</label>
+        <select id="ship" class="border px-2 py-1 rounded w-full">
+          <option value="BRDST">BR/DST (≤50k m³, ≤1.5B collat.)</option>
+          <option value="FREIGHTER">Freighter (≤350k m³, ≤1B collat., HS only)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Volume (m³)</label>
+        <input id="volume" type="number" class="border px-2 py-1 rounded w-full" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Collateral (ISK)</label>
+        <input id="collateral" class="border px-2 py-1 rounded w-full" placeholder="e.g. 1.5B" />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium">HS Jumps</label>
+          <input id="hsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">LS/NS Jumps</label>
+          <input id="lsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Speed</label>
+        <select id="speed" class="border px-2 py-1 rounded w-full">
+          <option value="standard">Standard (48–72h)</option>
+          <option value="sameday">Same-day (+25%)</option>
+          <option value="express">Express (+100%)</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-3">
+        <label><input id="roundtrip" type="checkbox"> Round trip</label>
+        <label><input id="partner20" type="checkbox"> Partner discount (−20%)</label>
+      </div>
+      <button id="calcBtn" class="btn w-full">Calculate</button>
     </div>
-    <div>
-      <label>Destination</label>
-      <input id="destination" class="border px-2 py-1 rounded w-full" placeholder="e.g. Amarr" />
+
+    <!-- Card result -->
+    <div class="card">
+      <h2 class="text-xl font-bold text-blue-900 mb-2">Result</h2>
+      <div id="result" class="text-gray-800">Fill the form and press Calculate.</div>
+      <div id="partnerMsg" class="text-green-700 font-semibold mt-3 hidden">
+        You are an official partner of Hyperline Express
+      </div>
     </div>
-    <div>
-      <label>Ship Type</label>
-      <select id="ship" class="border px-2 py-1 rounded w-full">
-        <option value="BRDST">BR/DST (≤50k m³, ≤1.5B collat.)</option>
-        <option value="FREIGHTER">Freighter (≤350k m³, ≤1B collat., HS only)</option>
-      </select>
-    </div>
-    <div>
-      <label>Volume (m³)</label>
-      <input id="volume" type="number" class="border px-2 py-1 rounded w-full" />
-    </div>
-    <div>
-      <label>Collateral (ISK)</label>
-      <input id="collateral" class="border px-2 py-1 rounded w-full" placeholder="e.g. 1.5B" />
-    </div>
-    <div>
-      <label>HS Jumps</label>
-      <input id="hsJumps" type="number" class="border px-2 py-1 rounded w-full" />
-    </div>
-    <div>
-      <label>LS/NS Jumps</label>
-      <input id="lsJumps" type="number" class="border px-2 py-1 rounded w-full" />
-    </div>
-    <div>
-      <label>Speed</label>
-      <select id="speed" class="border px-2 py-1 rounded w-full">
-        <option value="standard">Standard (48–72h)</option>
-        <option value="sameday">Same-day (+25%)</option>
-        <option value="express">Express (+100%)</option>
-      </select>
-    </div>
-    <div class="flex items-center gap-4">
-      <label><input id="roundtrip" type="checkbox"> Round trip</label>
-      <label><input id="backhaul20" type="checkbox"> Backhaul discount (−20%)</label>
-    </div>
-    <button id="calcBtn" class="btn">Calculate</button>
+
   </div>
-
-  <div id="result" class="mt-6 p-4 bg-white rounded shadow"></div>
 
   <script>
     function parseISK(val) {
@@ -89,9 +114,8 @@
       const ship = document.getElementById('ship').value;
       const speed = document.getElementById('speed').value;
       const roundtrip = document.getElementById('roundtrip').checked;
-      const backhaul = document.getElementById('backhaul20').checked;
+      const partner = document.getElementById('partner20').checked;
 
-      // tarifas ocultas
       const rates = {
         BRDST: {HS:3, LS:6, MIN:20},
         FREIGHTER: {HS:4, MIN:30}
@@ -113,13 +137,16 @@
       leg *= speedFactor[speed];
 
       let total = leg;
-      if (roundtrip) total += backhaul ? leg*0.8 : leg;
+      if (roundtrip) total += leg;
+
+      if (partner) total *= 0.8;
 
       document.getElementById('result').innerHTML = `
-        <div class="text-xl font-bold">${total.toFixed(1)}M ISK</div>
+        <div class="text-2xl font-bold text-blue-900">${total.toFixed(1)}M ISK</div>
         <div class="text-sm text-gray-700">
-          HS ${hs} · LS/NS ${ls} · Speed: ${speed} · ${roundtrip?'Round trip':''}
+          HS ${hs} · LS/NS ${ls} · Speed: ${speed} · ${roundtrip?'Round trip':'One-way'}
         </div>`;
+      document.getElementById('partnerMsg').classList.toggle('hidden', !partner);
     }
 
     document.getElementById('calcBtn').onclick = calc;
