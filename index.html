@@ -201,6 +201,45 @@
     const routeKey = (a, b) => [a, b].map(x => (x||'').trim()).sort((x, y) => x.localeCompare(y)).join('—');
 
     // ---------- Data ----------
+    // ---------- ESI helpers ----------
+    const ESI = 'https://esi.evetech.net/latest';
+    
+    async function systemIdByName(name) {
+      const q = encodeURIComponent((name || '').trim());
+      if (!q) return null;
+      const url = `${ESI}/search/?categories=solar_system&search=${q}&strict=true&datasource=tranquility`;
+      const r = await fetch(url);
+      if (!r.ok) return null;
+      const data = await r.json();
+      return (data.solar_system && data.solar_system[0]) || null;
+    }
+    
+    async function getRouteSystemIds(originId, destId) {
+      const url = `${ESI}/route/${originId}/${destId}/?flag=shortest&datasource=tranquility`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('ESI route error');
+      return r.json(); // array de system_ids
+    }
+    
+    const _secCache = new Map();
+    async function getSecurityStatus(systemId) {
+      if (_secCache.has(systemId)) return _secCache.get(systemId);
+      const url = `${ESI}/universe/systems/${systemId}/?datasource=tranquility`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('ESI system error');
+      const data = await r.json();
+      const sec = Number(data.security_status); // -1.0 .. 1.0
+      _secCache.set(systemId, sec);
+      return sec;
+    }
+    
+    function classifySec(sec) {
+      if (sec >= 0.5) return 'HS';
+      if (sec > 0.0)  return 'LS';
+      return 'NS';
+    }
+
+    
     const FIXED_BRDST = {
       'Amarr—Jita': { standard: 50, sameday: 90, express: 150 },
       'Dodixie—Jita': { standard: 25, sameday: 68, express: 125 },
@@ -229,6 +268,18 @@
       FREIGHTER: { HS: 4, LS: null, MIN: 30, COLLIM: 1e9, VOLLIM: 350000 },
     };
 
+    // Límites (se muestran en el panel lateral, ya lo tienes)
+    const LIMITS = {
+      BRDST: { COLLIM: 1.5e9, VOLLIM: 50000, MIN: 20 },
+      FREIGHTER: { COLLIM: 1e9,  VOLLIM: 350000, MIN: 30 },
+    };
+    
+    // Tarifas internas (no se muestran en la UI)
+    const HIDDEN_RATES = {
+      BRDST: { HS: 3, LS: 6 },     // M ISK por salto
+      FREIGHTER: { HS: 4 }         // HS only
+    };
+    
     const SPEED_FACTOR = { standard: 1, sameday: 1.25, express: 2 };
 
     function findFixedPrice(ship, a, b, speed) {
@@ -237,17 +288,85 @@
       return table[key]?.[speed] ?? null;
     }
 
-    function calc() {
-      const origin = byId('origin').value || '';
-      const destination = byId('destination').value || '';
-      const security = byId('security').value; // HS or LS
-      const ship = byId('ship').value; // BRDST or FREIGHTER
-      const volume = Number(byId('volume').value || 0);
-      const collateral = parseISK(byId('collateral').value || '');
-      const jumps = Number(byId('jumps').value || 0);
-      const speed = byId('speed').value; // standard/sameday/express
-      const roundtrip = byId('roundtrip').checked;
-      const backhaul20 = byId('backhaul20').checked;
+    async function calc() {
+    const origin = byId('origin').value || '';
+    const destination = byId('destination').value || '';
+    const ship = byId('ship').value;         // BRDST o FREIGHTER
+    const volume = Number(byId('volume').value || 0);
+    const collateral = parseISK(byId('collateral').value || '');
+    const speed = byId('speed').value;       // standard/sameday/express
+    const roundtrip = byId('roundtrip')?.checked || false;
+    const backhaul20 = byId('backhaul20')?.checked || false;
+  
+    const notices = [];
+    const lim = LIMITS[ship];
+  
+    // Validaciones básicas
+    if (volume > lim.VOLLIM) notices.push(`Volume exceeds ${lim.VOLLIM.toLocaleString()} m³ limit for ${ship}.`);
+    if (collateral > lim.COLLIM) notices.push(`Collateral exceeds ${(lim.COLLIM/1e9)}B ISK limit for ${ship}.`);
+  
+    // 1) Resolver IDs
+    const [oId, dId] = await Promise.all([systemIdByName(origin), systemIdByName(destination)]);
+    if (!oId || !dId) {
+      byId('result').innerHTML = `<div class="text-rose-300">Unknown system name(s). Check spelling.</div>`;
+      byId('notices').innerHTML = notices.map(n=>`<li class="text-rose-300">${n}</li>`).join('');
+      return;
+    }
+  
+    // 2) Ruta real
+    const pathIds = await getRouteSystemIds(oId, dId); // [sys0, sys1, ...]
+    const jumps = Math.max(0, (pathIds?.length || 0) - 1);
+  
+    // 3) Seguridad por salto (tomamos el sistema de destino de cada salto)
+    const destIds = pathIds.slice(1);
+    const secs = await Promise.all(destIds.map(getSecurityStatus));
+    const counts = secs.reduce((acc, s) => {
+      const band = classifySec(s);
+      acc[band]++; return acc;
+    }, { HS:0, LS:0, NS:0 });
+  
+    // 4) Precio por leg según nave y seguridad
+    let legPriceM = 0;
+    if (ship === 'BRDST') {
+      const hsM = counts.HS * HIDDEN_RATES.BRDST.HS;
+      const lowOrNullM = (counts.LS + counts.NS) * HIDDEN_RATES.BRDST.LS; // NS usa tarifa LS por defecto
+      legPriceM = hsM + lowOrNullM;
+      if (counts.NS > 0) notices.push('Null-sec detected on route. Service subject to availability.');
+    } else {
+      // FREIGHTER: solo HS
+      if (counts.LS > 0 || counts.NS > 0) {
+        notices.push('Route crosses Low/Null-sec. Freighter is HS-only. Choose BR/DST or set a HS-only path.');
+        byId('result').innerHTML = `<div class="text-rose-300">Freighter pricing unavailable for this route (LS/NS present).</div>`;
+        byId('notices').innerHTML = notices.map(n=>`<li class="text-rose-300">${n}</li>`).join('');
+        return;
+      }
+      legPriceM = jumps * HIDDEN_RATES.FREIGHTER.HS;
+    }
+  
+    // 5) Mínimo por leg + velocidad
+    legPriceM = Math.max(legPriceM, lim.MIN);
+    legPriceM *= (SPEED_FACTOR[speed] || 1);
+  
+    // 6) Round trip / backhaul
+    const outbound = legPriceM;
+    const inbound = roundtrip ? (backhaul20 ? legPriceM * 0.8 : legPriceM) : 0;
+    const total = outbound + inbound;
+  
+    // 7) Render
+    const secBadge = `HS: ${counts.HS} · LS: ${counts.LS} · NS: ${counts.NS}`;
+    byId('result').innerHTML = `
+      <div class="text-3xl font-extrabold mb-1">${fmtM(total)}</div>
+      <div class="text-sm mb-1">Jumps: <strong>${jumps}</strong> · Security legs: <strong>${secBadge}</strong></div>
+      <div class="text-sm mb-3">Speed: <span class="font-semibold capitalize">${speed.replace('sameday','same-day')}</span> · ${roundtrip?'Round trip (backhaul ' + (backhaul20?'-20%':'no') + ')':'One-way'}</div>
+      <div class="text-slate-300">Leg price: <strong>${fmtM(legPriceM)}</strong> ${roundtrip?`· Outbound: ${fmtM(outbound)} · Return: ${fmtM(inbound)}`:''}</div>
+    `;
+    byId('notices').innerHTML = notices.length
+      ? notices.map(n=>`<li class="text-rose-300">${n}</li>`).join('')
+      : '<li class="text-emerald-300">Route fetched from ESI. All inputs within limits.</li>';
+  
+    // Devuelve estado para el botón “Copy EVEmail Quote”
+    return { origin, destination, ship, volume, collateral, speed, roundtrip, backhaul20, jumps, counts, total, legPriceM, outbound, inbound, notices };
+  }
       
       
 
