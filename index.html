@@ -12,21 +12,24 @@
     html, body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
     .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
     .soft-card { box-shadow: 0 10px 30px rgba(0,0,0,.15); }
-  </style>
+    /* Improve select contrast */
+  select{ color:#E5E7EB; background-color:rgba(2,6,23,0.4);} 
+  select option{ color:#111827; background:#ffffff;}
+</style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100">
+<body class="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950 text-slate-100">
   <header class="max-w-6xl mx-auto px-4 pt-10 pb-6">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-2xl bg-cyan-400/20 border border-cyan-300/30 grid place-items-center">
-          <span class="text-cyan-300 font-black">HX</span>
+        <div class="h-10 w-10 rounded-2xl bg-amber-400/20 border border-amber-300/30 grid place-items-center">
+          <span class="text-amber-300 font-black">HX</span>
         </div>
         <div>
           <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Hyperline Express</h1>
           <p class="text-slate-300/80 -mt-0.5">Fast · Flexible · Secure</p>
         </div>
       </div>
-      <a href="#how-to" class="text-sm text-cyan-300 hover:underline">Deploy on GitHub Pages →</a>
+      <a href="#how-to" class="text-sm text-amber-300 hover:underline">Deploy on GitHub Pages →</a>
     </div>
   </header>
 
@@ -38,16 +41,16 @@
       <form id="calcForm" class="grid md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm mb-1">Origin</label>
-          <input list="hublist" id="origin" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., Jita" />
+          <input list="hublist" id="origin" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="e.g., Jita" />
         </div>
         <div>
           <label class="block text-sm mb-1">Destination</label>
-          <input list="hublist" id="destination" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., Amarr / Parchanier" />
+          <input list="hublist" id="destination" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="e.g., Amarr / Parchanier" />
         </div>
 
         <div>
           <label class="block text-sm mb-1">Security Band</label>
-          <select id="security" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+          <select id=\"security\" class=\"w-full rounded-xl bg-blue-900/40 text-slate-100 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400\">
             <option value="HS">High-Sec</option>
             <option value="LS">Low-Sec</option>
           </select>
@@ -55,7 +58,7 @@
 
         <div>
           <label class="block text-sm mb-1">Ship Type</label>
-          <select id="ship" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+          <select id=\"ship\" class=\"w-full rounded-xl bg-blue-900/40 text-slate-100 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400\">
             <option value="BRDST">BR / DST (≤ 50,000 m³, ≤ 1.5B collateral)</option>
             <option value="FREIGHTER">Freighter (≤ 350,000 m³, ≤ 1B collateral, HS only)</option>
           </select>
@@ -63,20 +66,20 @@
 
         <div>
           <label class="block text-sm mb-1">Volume (m³)</label>
-          <input id="volume" type="number" min="0" step="1" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., 50000" />
+          <input id="volume" type="number" min="0" step="1" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="e.g., 50000" />
         </div>
         <div>
           <label class="block text-sm mb-1">Collateral (ISK)</label>
-          <input id="collateral" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., 1.5B or 750M" />
+          <input id="collateral" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="e.g., 1.5B or 750M" />
         </div>
 
         <div>
           <label class="block text-sm mb-1">Jumps (if not a hub route)</label>
-          <input id="jumps" type="number" min="0" step="1" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., 14" />
+          <input id="jumps" type="number" min="0" step="1" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="e.g., 14" />
         </div>
         <div>
           <label class="block text-sm mb-1">Speed</label>
-          <select id="speed" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+          <select id=\"speed\" class=\"w-full rounded-xl bg-blue-900/40 text-slate-100 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400\">
             <option value="standard">Standard (48–72h)</option>
             <option value="sameday">Same-day (≤24h)</option>
             <option value="express">Express (≤6h)</option>
@@ -84,22 +87,10 @@
         </div>
 
         <div class="md:col-span-2 flex flex-wrap items-center gap-4 pt-2">
-          <label class="inline-flex items-center gap-2 text-sm">
-            <input id="roundtrip" type="checkbox" class="rounded border-white/20 bg-white/10"> Round trip
-          </label>
-          <label class="inline-flex items-center gap-2 text-sm">
-            <input id="backhaul20" type="checkbox" class="rounded border-white/20 bg-white/10"> Backhaul discount (−20% on return leg)
-          </label>
-          <label class="inline-flex items-center gap-2 text-sm">
-            <input id="partner20" type="checkbox" class="rounded border-white/20 bg-white/10"> Partner discount (−20% overall)
-          </label>
-          <label class="inline-flex items-center gap-2 text-sm">
-            <input id="jitaParVolumeTier" type="checkbox" class="rounded border-white/20 bg-white/10"> Jita⇄Parchanier volume tier (22M/leg when eligible)
-          </label>
         </div>
 
         <div class="md:col-span-2 flex items-center gap-3 pt-2">
-          <button type="button" id="calcBtn" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold">Calculate</button>
+          <button type="button" id="calcBtn" class="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-semibold">Calculate</button>
           <button type="button" id="copyBtn" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15">Copy EVEmail Quote</button>
           <span id="status" class="text-sm text-slate-300/80"></span>
         </div>
@@ -130,16 +121,16 @@
 
     <!-- Conditions / Pricing -->
     <aside class="glass soft-card rounded-2xl p-6 space-y-5">
-      <h2 class="text-xl font-bold">Conditions & Rates</h2>
+      <h2 class="text-xl font-bold">Conditions & Limits</h2>
       <div class="space-y-3 text-sm">
         <div>
           <h4 class="font-semibold">BR / DST</h4>
           <ul class="list-disc ml-5 leading-relaxed text-slate-200">
             <li>Capacity: ≤ <strong>50,000 m³</strong></li>
             <li>Collateral: ≤ <strong>1.5B</strong> ISK</li>
-            <li>High-Sec rate: <strong>3M/jump</strong></li>
-            <li>Low-Sec rate: <strong>6M/jump</strong></li>
-            <li>Minimum fee per leg: <strong>20M</strong></li>
+            
+            
+            
           </ul>
         </div>
         <div>
@@ -147,17 +138,11 @@
           <ul class="list-disc ml-5 leading-relaxed text-slate-200">
             <li>Capacity: ≤ <strong>350,000 m³</strong></li>
             <li>Collateral: ≤ <strong>1B</strong> ISK</li>
-            <li>High-Sec rate: <strong>4M/jump</strong> (HS only)</li>
-            <li>Minimum fee per leg: <strong>30M</strong></li>
+            
+            
           </ul>
         </div>
-        <div>
-          <h4 class="font-semibold">Fixed Hub Routes (each leg)</h4>
-          <p class="text-slate-300">If your origin/destination matches one of these pairs, fixed pricing applies.</p>
-          <div class="grid grid-cols-1 gap-2 text-xs">
-            <div class="rounded-xl bg-white/5 border border-white/10 p-3">
-              <div class="font-semibold">BR/DST</div>
-              <div>Jita⇄Amarr: <strong>50M / 90M / 150M</strong></div>
+        <div>Jita⇄Amarr: <strong>50M / 90M / 150M</strong></div>
               <div>Jita⇄Dodixie: <strong>25M / 68M / 125M</strong></div>
               <div>Jita⇄Hek: <strong>30M / 60M / 110M</strong></div>
               <div>Jita⇄Rens: <strong>25M / 52M / 90M</strong></div>
@@ -180,13 +165,11 @@
           </ul>
         </div>
         <div>
-          <h4 class="font-semibold">Discounts</h4>
-          <ul class="list-disc ml-5 leading-relaxed text-slate-200">
-            <li>Partner discount: <strong>−20%</strong> (overall)</li>
-            <li>Backhaul discount: <strong>−20%</strong> (return leg only)</li>
-            <li>Jita⇄Parchanier volume tier: <strong>22M/leg</strong> if ≥3 round trips/week</li>
-          </ul>
-        </div>
+  <h4 class=\"font-semibold\">Custom Pricing</h4>
+  <ul class=\"list-disc ml-5 leading-relaxed text-slate-200\">
+    <li>For recurring or high-volume contracts, <strong>contact us</strong> for tailored partner rates.</li>
+  </ul>
+</div>
       </div>
     </aside>
   </main>
@@ -265,8 +248,8 @@
       const speed = byId('speed').value; // standard/sameday/express
       const roundtrip = byId('roundtrip').checked;
       const backhaul20 = byId('backhaul20').checked;
-      const partner20 = byId('partner20').checked;
-      const jitaParTier = byId('jitaParVolumeTier').checked;
+      
+      
 
       const notices = [];
 
@@ -281,14 +264,7 @@
       let legPrice = findFixedPrice(ship, origin, destination, speed);
 
       // Jita⇄Parchanier volume tier override (per leg)
-      const jpKey = routeKey('Jita', 'Parchanier');
-      const isJitaPar = routeKey(origin, destination) === jpKey;
-
-      if (jitaParTier && isJitaPar && ship === 'BRDST' && speed === 'standard') {
-        // 22M per leg fixed if eligible
-        legPrice = 22;
-      }
-
+      
       if (legPrice == null) {
         // Per-jump pricing
         const rate = cfg[security];
@@ -306,13 +282,13 @@
       if (roundtrip && backhaul20) inbound = inbound * 0.8;
 
       let total = outbound + inbound;
-      if (partner20) total = total * 0.8;
+      
 
       // Render result
       const breakdown = [
         `<div><span class='text-slate-300'>Leg price:</span> <strong>${fmtM(legPrice)}</strong></div>`,
         roundtrip ? `<div><span class='text-slate-300'>Outbound:</span> ${fmtM(outbound)} · <span class='text-slate-300'>Return:</span> ${fmtM(inbound)}</div>` : `<div><span class='text-slate-300'>One-way:</span> ${fmtM(outbound)}</div>`,
-        partner20 ? `<div><span class='text-slate-300'>Partner discount applied:</span> −20%</div>` : '',
+        
         backhaul20 && roundtrip ? `<div><span class='text-slate-300'>Backhaul discount (return leg):</span> −20%</div>` : '',
       ].filter(Boolean).join('');
 
@@ -341,13 +317,13 @@
         lines.push(`Jumps: ${state.jumps}`);
       }
       lines.push('');
-      if (state.jitaParTier) lines.push(`Applied tier: Jita⇄Parchanier 22M/leg (eligible).`);
-      if (state.partner20) lines.push(`Partner discount: −20% overall.`);
+      
+      
       if (state.backhaul20 && state.roundtrip) lines.push(`Backhaul discount: −20% on return leg.`);
       lines.push('');
       lines.push(`Price: ${fmtM(state.total)}${state.roundtrip ? ` (Outbound ${fmtM(state.outbound)} + Return ${fmtM(state.inbound)})` : ''}`);
       lines.push('');
-      lines.push(`Terms: Standard 48–72h · Same‑day +25% (availability) · Express +100% (on request). Minimums: BR/DST 20M, Freighter 30M.`);
+      lines.push(`Terms: Standard 48–72h · Same‑day +25% (availability) · Express +100% (on request).`);
       return lines.join('\n');
     }
 
