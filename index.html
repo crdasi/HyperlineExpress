@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hyperline Express – Route Price Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
+    .soft-card { box-shadow: 0 10px 30px rgba(0,0,0,.15); }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100">
+  <header class="max-w-6xl mx-auto px-4 pt-10 pb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl bg-cyan-400/20 border border-cyan-300/30 grid place-items-center">
+          <span class="text-cyan-300 font-black">HX</span>
+        </div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Hyperline Express</h1>
+          <p class="text-slate-300/80 -mt-0.5">Fast · Flexible · Secure</p>
+        </div>
+      </div>
+      <a href="#how-to" class="text-sm text-cyan-300 hover:underline">Deploy on GitHub Pages →</a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 grid lg:grid-cols-3 gap-6 pb-16">
+    <!-- Calculator -->
+    <section class="lg:col-span-2 glass soft-card rounded-2xl p-6">
+      <h2 class="text-xl font-bold mb-4">Route Price Calculator</h2>
+
+      <form id="calcForm" class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm mb-1">Origin</label>
+          <input list="hublist" id="origin" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., Jita" />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Destination</label>
+          <input list="hublist" id="destination" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., Amarr / Parchanier" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Security Band</label>
+          <select id="security" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <option value="HS">High-Sec</option>
+            <option value="LS">Low-Sec</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Ship Type</label>
+          <select id="ship" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <option value="BRDST">BR / DST (≤ 50,000 m³, ≤ 1.5B collateral)</option>
+            <option value="FREIGHTER">Freighter (≤ 350,000 m³, ≤ 1B collateral, HS only)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Volume (m³)</label>
+          <input id="volume" type="number" min="0" step="1" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., 50000" />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Collateral (ISK)</label>
+          <input id="collateral" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., 1.5B or 750M" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Jumps (if not a hub route)</label>
+          <input id="jumps" type="number" min="0" step="1" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400" placeholder="e.g., 14" />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Speed</label>
+          <select id="speed" class="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <option value="standard">Standard (48–72h)</option>
+            <option value="sameday">Same-day (≤24h)</option>
+            <option value="express">Express (≤6h)</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2 flex flex-wrap items-center gap-4 pt-2">
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="roundtrip" type="checkbox" class="rounded border-white/20 bg-white/10"> Round trip
+          </label>
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="backhaul20" type="checkbox" class="rounded border-white/20 bg-white/10"> Backhaul discount (−20% on return leg)
+          </label>
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="partner20" type="checkbox" class="rounded border-white/20 bg-white/10"> Partner discount (−20% overall)
+          </label>
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="jitaParVolumeTier" type="checkbox" class="rounded border-white/20 bg-white/10"> Jita⇄Parchanier volume tier (22M/leg when eligible)
+          </label>
+        </div>
+
+        <div class="md:col-span-2 flex items-center gap-3 pt-2">
+          <button type="button" id="calcBtn" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold">Calculate</button>
+          <button type="button" id="copyBtn" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15">Copy EVEmail Quote</button>
+          <span id="status" class="text-sm text-slate-300/80"></span>
+        </div>
+      </form>
+
+      <datalist id="hublist">
+        <option value="Jita"></option>
+        <option value="Amarr"></option>
+        <option value="Dodixie"></option>
+        <option value="Hek"></option>
+        <option value="Rens"></option>
+        <option value="Parchanier"></option>
+      </datalist>
+
+      <div class="mt-6 grid md:grid-cols-2 gap-4">
+        <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+          <h3 class="font-semibold mb-2">Result</h3>
+          <div id="result" class="text-lg leading-relaxed">
+            <div class="text-slate-300">Fill the form and click <span class="font-semibold">Calculate</span>.</div>
+          </div>
+        </div>
+        <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+          <h3 class="font-semibold mb-2">Notices & Validation</h3>
+          <ul id="notices" class="space-y-2 text-sm text-slate-200"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conditions / Pricing -->
+    <aside class="glass soft-card rounded-2xl p-6 space-y-5">
+      <h2 class="text-xl font-bold">Conditions & Rates</h2>
+      <div class="space-y-3 text-sm">
+        <div>
+          <h4 class="font-semibold">BR / DST</h4>
+          <ul class="list-disc ml-5 leading-relaxed text-slate-200">
+            <li>Capacity: ≤ <strong>50,000 m³</strong></li>
+            <li>Collateral: ≤ <strong>1.5B</strong> ISK</li>
+            <li>High-Sec rate: <strong>3M/jump</strong></li>
+            <li>Low-Sec rate: <strong>6M/jump</strong></li>
+            <li>Minimum fee per leg: <strong>20M</strong></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold">Freighter</h4>
+          <ul class="list-disc ml-5 leading-relaxed text-slate-200">
+            <li>Capacity: ≤ <strong>350,000 m³</strong></li>
+            <li>Collateral: ≤ <strong>1B</strong> ISK</li>
+            <li>High-Sec rate: <strong>4M/jump</strong> (HS only)</li>
+            <li>Minimum fee per leg: <strong>30M</strong></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold">Fixed Hub Routes (each leg)</h4>
+          <p class="text-slate-300">If your origin/destination matches one of these pairs, fixed pricing applies.</p>
+          <div class="grid grid-cols-1 gap-2 text-xs">
+            <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+              <div class="font-semibold">BR/DST</div>
+              <div>Jita⇄Amarr: <strong>50M / 90M / 150M</strong></div>
+              <div>Jita⇄Dodixie: <strong>25M / 68M / 125M</strong></div>
+              <div>Jita⇄Hek: <strong>30M / 60M / 110M</strong></div>
+              <div>Jita⇄Rens: <strong>25M / 52M / 90M</strong></div>
+            </div>
+            <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+              <div class="font-semibold">Freighter</div>
+              <div>Jita⇄Amarr: <strong>100M / 150M / 250M</strong></div>
+              <div>Jita⇄Dodixie: <strong>40M / 110M / 190M</strong></div>
+              <div>Jita⇄Hek: <strong>55M / 119M / 170M</strong></div>
+              <div>Jita⇄Rens: <strong>50M / 109M / 160M</strong></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-semibold">Speed Multipliers</h4>
+          <ul class="list-disc ml-5 leading-relaxed text-slate-200">
+            <li>Standard (48–72h): <strong>+0%</strong></li>
+            <li>Same-day (≤24h): <strong>+25%</strong></li>
+            <li>Express (≤6h): <strong>+100%</strong> (on request & subject to availability)</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold">Discounts</h4>
+          <ul class="list-disc ml-5 leading-relaxed text-slate-200">
+            <li>Partner discount: <strong>−20%</strong> (overall)</li>
+            <li>Backhaul discount: <strong>−20%</strong> (return leg only)</li>
+            <li>Jita⇄Parchanier volume tier: <strong>22M/leg</strong> if ≥3 round trips/week</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <section id="how-to" class="max-w-6xl mx-auto px-4 pb-20">
+    <div class="glass soft-card rounded-2xl p-6">
+      <h2 class="text-xl font-bold mb-3">How to deploy on GitHub Pages</h2>
+      <ol class="list-decimal ml-5 space-y-2 text-sm text-slate-200">
+        <li>Create a new GitHub repository (e.g., <em>hyperline-express</em>).</li>
+        <li>Add this file as <code>index.html</code> to the root of the repository and commit.</li>
+        <li>Go to <strong>Settings → Pages</strong> and set <em>Source</em> to your <strong>main</strong> branch, <em>root</em> folder.</li>
+        <li>Save. Your site will be available at <em>https://&lt;your-user&gt;.github.io/&lt;repo&gt;</em> after a short build.</li>
+      </ol>
+      <p class="mt-3 text-xs text-slate-400">Optional: customize colors, add your logo, or edit the rates in the script below.</p>
+    </div>
+  </section>
+
+  <script>
+    // ---------- Helpers ----------
+    const byId = (id) => document.getElementById(id);
+    const fmtM = (n) => `${(Math.round(n * 10) / 10).toFixed(1)}M ISK`;
+    const parseISK = (s) => {
+      if (!s) return 0;
+      const t = s.toString().trim().toLowerCase();
+      const m = t.endsWith('b') ? 1e9 : t.endsWith('m') ? 1e6 : t.endsWith('k') ? 1e3 : 1;
+      const v = parseFloat(t.replace(/[^0-9.\-]/g, '')) * m;
+      return isNaN(v) ? 0 : v;
+    };
+    const routeKey = (a, b) => [a, b].map(x => (x||'').trim()).sort((x, y) => x.localeCompare(y)).join('—');
+
+    // ---------- Data ----------
+    const FIXED_BRDST = {
+      'Amarr—Jita': { standard: 50, sameday: 90, express: 150 },
+      'Dodixie—Jita': { standard: 25, sameday: 68, express: 125 },
+      'Hek—Jita': { standard: 30, sameday: 60, express: 110 },
+      'Jita—Rens': { standard: 25, sameday: 52, express: 90 },
+      'Amarr—Jita': { standard: 50, sameday: 90, express: 150 },
+      'Jita—Amarr': { standard: 50, sameday: 90, express: 150 }, // redundancy-safe
+      'Jita—Dodixie': { standard: 25, sameday: 68, express: 125 },
+      'Jita—Hek': { standard: 30, sameday: 60, express: 110 },
+      'Rens—Jita': { standard: 25, sameday: 52, express: 90 },
+    };
+
+    const FIXED_FREIGHTER = {
+      'Amarr—Jita': { standard: 100, sameday: 150, express: 250 },
+      'Dodixie—Jita': { standard: 40, sameday: 110, express: 190 },
+      'Hek—Jita': { standard: 55, sameday: 119, express: 170 },
+      'Jita—Rens': { standard: 50, sameday: 109, express: 160 },
+      'Jita—Amarr': { standard: 100, sameday: 150, express: 250 },
+      'Jita—Dodixie': { standard: 40, sameday: 110, express: 190 },
+      'Jita—Hek': { standard: 55, sameday: 119, express: 170 },
+      'Rens—Jita': { standard: 50, sameday: 109, express: 160 },
+    };
+
+    const RATES = {
+      BRDST: { HS: 3, LS: 6, MIN: 20, COLLIM: 1.5e9, VOLLIM: 50000 },
+      FREIGHTER: { HS: 4, LS: null, MIN: 30, COLLIM: 1e9, VOLLIM: 350000 },
+    };
+
+    const SPEED_FACTOR = { standard: 1, sameday: 1.25, express: 2 };
+
+    function findFixedPrice(ship, a, b, speed) {
+      const key = routeKey(a, b);
+      const table = ship === 'FREIGHTER' ? FIXED_FREIGHTER : FIXED_BRDST;
+      return table[key]?.[speed] ?? null;
+    }
+
+    function calc() {
+      const origin = byId('origin').value || '';
+      const destination = byId('destination').value || '';
+      const security = byId('security').value; // HS or LS
+      const ship = byId('ship').value; // BRDST or FREIGHTER
+      const volume = Number(byId('volume').value || 0);
+      const collateral = parseISK(byId('collateral').value || '');
+      const jumps = Number(byId('jumps').value || 0);
+      const speed = byId('speed').value; // standard/sameday/express
+      const roundtrip = byId('roundtrip').checked;
+      const backhaul20 = byId('backhaul20').checked;
+      const partner20 = byId('partner20').checked;
+      const jitaParTier = byId('jitaParVolumeTier').checked;
+
+      const notices = [];
+
+      // Validation
+      const cfg = RATES[ship];
+      if (!cfg) return;
+      if (volume > cfg.VOLLIM) notices.push(`Volume exceeds ${cfg.VOLLIM.toLocaleString()} m³ limit for ${ship}.`);
+      if (collateral > cfg.COLLIM) notices.push(`Collateral exceeds ${(cfg.COLLIM/1e9)}B ISK limit for ${ship}.`);
+      if (ship === 'FREIGHTER' && security === 'LS') notices.push('Freighter pricing is HS only.');
+
+      // Try fixed route pricing first
+      let legPrice = findFixedPrice(ship, origin, destination, speed);
+
+      // Jita⇄Parchanier volume tier override (per leg)
+      const jpKey = routeKey('Jita', 'Parchanier');
+      const isJitaPar = routeKey(origin, destination) === jpKey;
+
+      if (jitaParTier && isJitaPar && ship === 'BRDST' && speed === 'standard') {
+        // 22M per leg fixed if eligible
+        legPrice = 22;
+      }
+
+      if (legPrice == null) {
+        // Per-jump pricing
+        const rate = cfg[security];
+        if (rate == null) {
+          notices.push('Selected ship/security combo has no per-jump rate.');
+        }
+        const base = Math.max((jumps || 0) * (rate || 0), cfg.MIN);
+        legPrice = base * (SPEED_FACTOR[speed] || 1);
+      }
+
+      // Now compute totals
+      let outbound = legPrice;
+      let inbound = roundtrip ? legPrice : 0;
+
+      if (roundtrip && backhaul20) inbound = inbound * 0.8;
+
+      let total = outbound + inbound;
+      if (partner20) total = total * 0.8;
+
+      // Render result
+      const breakdown = [
+        `<div><span class='text-slate-300'>Leg price:</span> <strong>${fmtM(legPrice)}</strong></div>`,
+        roundtrip ? `<div><span class='text-slate-300'>Outbound:</span> ${fmtM(outbound)} · <span class='text-slate-300'>Return:</span> ${fmtM(inbound)}</div>` : `<div><span class='text-slate-300'>One-way:</span> ${fmtM(outbound)}</div>`,
+        partner20 ? `<div><span class='text-slate-300'>Partner discount applied:</span> −20%</div>` : '',
+        backhaul20 && roundtrip ? `<div><span class='text-slate-300'>Backhaul discount (return leg):</span> −20%</div>` : '',
+      ].filter(Boolean).join('');
+
+      byId('result').innerHTML = `
+        <div class="text-3xl font-extrabold mb-1">${fmtM(total)}</div>
+        <div class="text-sm mb-3">Total price ${roundtrip ? '(round trip)' : '(one way)'} — speed: <span class="font-semibold capitalize">${speed.replace('sameday','same‑day')}</span></div>
+        ${breakdown}
+      `;
+
+      byId('notices').innerHTML = notices.length
+        ? notices.map(n => `<li class="text-rose-300">${n}</li>`).join('')
+        : '<li class="text-emerald-300">All inputs within limits.</li>';
+
+      return { origin, destination, security, ship, volume, collateral, jumps, speed, roundtrip, backhaul20, partner20, jitaParTier, total, legPrice, outbound, inbound, notices };
+    }
+
+    function toEvemail(state) {
+      const lines = [];
+      lines.push(`Subject: Quote – Hyperline Express`);
+      lines.push('');
+      lines.push(`Route: ${state.origin} → ${state.destination}${state.roundtrip ? ' → ' + state.origin : ''}`);
+      lines.push(`Ship: ${state.ship === 'BRDST' ? 'BR/DST' : 'Freighter'} · Security: ${state.security}`);
+      lines.push(`Speed: ${state.speed}`);
+      lines.push(`Volume: ${state.volume.toLocaleString()} m³ · Collateral: ${state.collateral.toLocaleString()} ISK`);
+      if (!Object.keys(FIXED_BRDST).includes(routeKey(state.origin, state.destination)) && !Object.keys(FIXED_FREIGHTER).includes(routeKey(state.origin, state.destination))) {
+        lines.push(`Jumps: ${state.jumps}`);
+      }
+      lines.push('');
+      if (state.jitaParTier) lines.push(`Applied tier: Jita⇄Parchanier 22M/leg (eligible).`);
+      if (state.partner20) lines.push(`Partner discount: −20% overall.`);
+      if (state.backhaul20 && state.roundtrip) lines.push(`Backhaul discount: −20% on return leg.`);
+      lines.push('');
+      lines.push(`Price: ${fmtM(state.total)}${state.roundtrip ? ` (Outbound ${fmtM(state.outbound)} + Return ${fmtM(state.inbound)})` : ''}`);
+      lines.push('');
+      lines.push(`Terms: Standard 48–72h · Same‑day +25% (availability) · Express +100% (on request). Minimums: BR/DST 20M, Freighter 30M.`);
+      return lines.join('\n');
+    }
+
+    byId('calcBtn').addEventListener('click', () => {
+      const st = calc();
+      byId('status').textContent = 'Calculated ✔';
+      setTimeout(() => (byId('status').textContent = ''), 1500);
+    });
+
+    byId('copyBtn').addEventListener('click', () => {
+      const st = calc();
+      const text = toEvemail(st);
+      navigator.clipboard.writeText(text).then(() => {
+        byId('status').textContent = 'Quote copied to clipboard';
+        setTimeout(() => (byId('status').textContent = ''), 1500);
+      });
+    });
+  </script>
+</body>
+</html>
