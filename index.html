@@ -3,336 +3,126 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hyperline Express – Route Price Calculator</title>
-  <script src="https://cdn.tailwindcss.com">// Ensure Calculate works even if earlier listeners failed
-  window.addEventListener('load', function(){
-    var b = document.getElementById('calcBtn');
-    if (b) {
-      b.onclick = async function(){
-        try {
-          var s = document.getElementById('status');
-          s.textContent = 'Calculating…';
-          var st = await calc();
-          s.textContent = st ? 'Calculated ✔' : 'Check inputs';
-          setTimeout(function(){ s.textContent=''; }, 1500);
-        } catch(e){ console.error(e); }
-      };
-    }
-  });
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Hyperline Express – Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    html, body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-    .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.06); }
-    .soft-card { box-shadow: 0 10px 30px rgba(0,0,0,.10); }
-    /* Select contrast */
-    select{ color:#0f172a; background-color:#ffffff; }
-    select option{ color:#0f172a; }
-    /* Palette: primary soft yellow, secondary blue */
-    :root{
-      --hx-yellow:#F7E7A3;  /* soft, not neon */
-      --hx-yellow-strong:#F0D669;
-      --hx-blue:#1e40af;    /* blue-800 */
-      --hx-blue-acc:#2563eb;/* blue-600 for accents */
+    body {
+      font-family: sans-serif;
+      background: #f7e7a3; /* amarillo suave */
+    }
+    .btn {
+      background: #1e40af; /* azul */
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
     }
   </style>
 </head>
-<body class="min-h-screen" style="background: radial-gradient(1200px 800px at 20% -10%, rgba(255,255,255,.7), transparent), linear-gradient(135deg, var(--hx-yellow) 0%, #FFF8D7 50%, var(--hx-yellow) 100%)">  
-  <header class="max-w-6xl mx-auto px-4 pt-10 pb-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-2xl" style="background: rgba(37,99,235,.12); border:1px solid rgba(37,99,235,.35);" >
-          <div class="h-full w-full grid place-items-center">
-            <span class="font-black" style="color:var(--hx-blue)">HX</span>
-          </div>
-        </div>
-        <div>
-          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight" style="color:var(--hx-blue)">Hyperline Express</h1>
-          <p class="text-slate-700 -mt-0.5">Fast · Flexible · Secure</p>
-        </div>
-      </div>
-      <a href="#how-to" class="text-sm font-medium" style="color:var(--hx-blue-acc)">Deploy on GitHub Pages →</a>
+<body class="p-6">
+
+  <h1 class="text-2xl font-bold mb-4" style="color:#1e40af">Hyperline Express</h1>
+
+  <div class="space-y-3">
+    <div>
+      <label>Origin</label>
+      <input id="origin" class="border px-2 py-1 rounded w-full" placeholder="e.g. Jita" />
     </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto px-4 grid lg:grid-cols-3 gap-6 pb-16">
-    <!-- Calculator -->
-    <section class="lg:col-span-2 glass soft-card rounded-2xl p-6">
-      <h2 class="text-xl font-bold mb-4" style="color:var(--hx-blue)">Route Price Calculator</h2>
-
-      <form id="calcForm" class="grid md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">Origin</label>
-          <input list="hublist" id="origin" class="w-full rounded-xl bg-white border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)" placeholder="e.g., Jita" />
-        </div>
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">Destination</label>
-          <input list="hublist" id="destination" class="w-full rounded-xl bg-white border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)" placeholder="e.g., Amarr / Dodixie / Parchanier" />
-        </div>
-
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">Ship Type</label>
-          <select id="ship" class="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)">
-            <option value="BRDST">BR / DST (≤ 50,000 m³, ≤ 1.5B collateral)</option>
-            <option value="FREIGHTER">Freighter (≤ 350,000 m³, ≤ 1B collateral, HS only)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">Speed</label>
-          <select id="speed" class="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)">
-            <option value="standard">Standard (48–72h)</option>
-            <option value="sameday">Same-day (≤24h)</option>
-            <option value="express">Express (≤6h)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">Volume (m³)</label>
-          <input id="volume" type="number" min="0" step="1" class="w-full rounded-xl bg-white border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)" placeholder="e.g., 50000" />
-        </div>
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">Collateral (ISK)</label>
-          <input id="collateral" class="w-full rounded-xl bg-white border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)" placeholder="e.g., 1.5B or 750M" />
-        </div>
-
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">HS Jumps</label>
-          <input id="hsJumps" type="number" min="0" step="1" class="w-full rounded-xl bg-white border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)" placeholder="e.g., 10" />
-        </div>
-        <div>
-          <label class="block text-sm mb-1 text-slate-700">LS/NS Jumps</label>
-          <input id="lsJumps" type="number" min="0" step="1" class="w-full rounded-xl bg-white border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2" style="--tw-ring-color: var(--hx-blue-acc)" placeholder="e.g., 4" />
-        </div>
-
-        <div class="md:col-span-2 flex flex-wrap items-center gap-4 pt-2">
-          <label class="inline-flex items-center gap-2 text-sm text-slate-800">
-            <input id="roundtrip" type="checkbox" class="rounded border-slate-300"> Round trip
-          </label>
-          <label class="inline-flex items-center gap-2 text-sm text-slate-800">
-            <input id="backhaul20" type="checkbox" class="rounded border-slate-300"> Backhaul discount (−20% on return)
-          </label>
-        </div>
-
-        <div class="md:col-span-2 flex items-center gap-3 pt-2">
-          <button type="button" id="calcBtn" class="px-4 py-2 rounded-xl font-semibold text-white" style="background:var(--hx-blue-acc)">Calculate</button>
-          <button type="button" id="copyBtn" class="px-4 py-2 rounded-xl border border-slate-300">Copy EVEmail Quote</button>
-          <span id="status" class="text-sm text-slate-700"></span>
-        </div>
-      </form>
-
-      <datalist id="hublist">
-        <option value="Jita"></option>
-        <option value="Amarr"></option>
-        <option value="Dodixie"></option>
-        <option value="Hek"></option>
-        <option value="Rens"></option>
-        <option value="Parchanier"></option>
-      </datalist>
-
-      <div class="mt-6 grid md:grid-cols-2 gap-4">
-        <div class="rounded-2xl bg-white/70 border border-slate-200 p-4">
-          <h3 class="font-semibold mb-2" style="color:var(--hx-blue)">Result</h3>
-          <div id="result" class="text-lg leading-relaxed text-slate-800">
-            <div>Fill the form and click <span class="font-semibold">Calculate</span>.</div>
-          </div>
-        </div>
-        <div class="rounded-2xl bg-white/70 border border-slate-200 p-4">
-          <h3 class="font-semibold mb-2" style="color:var(--hx-blue)">Notices & Validation</h3>
-          <ul id="notices" class="space-y-2 text-sm text-slate-800"></ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Conditions / Limits -->
-    <aside class="glass soft-card rounded-2xl p-6 space-y-5">
-      <h2 class="text-xl font-bold" style="color:var(--hx-blue)">Conditions & Limits</h2>
-      <div class="space-y-3 text-sm text-slate-800">
-        <div>
-          <h4 class="font-semibold">BR / DST</h4>
-          <ul class="list-disc ml-5 leading-relaxed">
-            <li>Capacity: ≤ <strong>50,000 m³</strong></li>
-            <li>Collateral: ≤ <strong>1.5B</strong> ISK</li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold">Freighter</h4>
-          <ul class="list-disc ml-5 leading-relaxed">
-            <li>Capacity: ≤ <strong>350,000 m³</strong></li>
-            <li>Collateral: ≤ <strong>1B</strong> ISK</li>
-            <li>Service: <strong>High-Sec only</strong></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold">Speed Options</h4>
-          <ul class="list-disc ml-5 leading-relaxed">
-            <li>Standard (48–72h)</li>
-            <li>Same-day (≤24h) — subject to availability</li>
-            <li>Express (≤6h) — on request</li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold">Custom Pricing</h4>
-          <ul class="list-disc ml-5 leading-relaxed">
-            <li>For recurring or high‑volume contracts, <strong>contact us</strong> for tailored rates.</li>
-          </ul>
-        </div>
-      </div>
-    </aside>
-  </main>
-
-  <section id="how-to" class="max-w-6xl mx-auto px-4 pb-20">
-    <div class="glass soft-card rounded-2xl p-6">
-      <h2 class="text-xl font-bold mb-3" style="color:var(--hx-blue)">How to deploy on GitHub Pages</h2>
-      <ol class="list-decimal ml-5 space-y-2 text-sm text-slate-800">
-        <li>Create a new GitHub repository (e.g., <em>hyperline-express</em>).</li>
-        <li>Add this file as <code>index.html</code> to the root and commit.</li>
-        <li>Settings → Pages → <strong>Deploy from a branch</strong> → <strong>main</strong> / <strong>root</strong>.</li>
-        <li>Open the URL shown by GitHub Pages.</li>
-      </ol>
+    <div>
+      <label>Destination</label>
+      <input id="destination" class="border px-2 py-1 rounded w-full" placeholder="e.g. Amarr" />
     </div>
-  </section>
+    <div>
+      <label>Ship Type</label>
+      <select id="ship" class="border px-2 py-1 rounded w-full">
+        <option value="BRDST">BR/DST (≤50k m³, ≤1.5B collat.)</option>
+        <option value="FREIGHTER">Freighter (≤350k m³, ≤1B collat., HS only)</option>
+      </select>
+    </div>
+    <div>
+      <label>Volume (m³)</label>
+      <input id="volume" type="number" class="border px-2 py-1 rounded w-full" />
+    </div>
+    <div>
+      <label>Collateral (ISK)</label>
+      <input id="collateral" class="border px-2 py-1 rounded w-full" placeholder="e.g. 1.5B" />
+    </div>
+    <div>
+      <label>HS Jumps</label>
+      <input id="hsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+    </div>
+    <div>
+      <label>LS/NS Jumps</label>
+      <input id="lsJumps" type="number" class="border px-2 py-1 rounded w-full" />
+    </div>
+    <div>
+      <label>Speed</label>
+      <select id="speed" class="border px-2 py-1 rounded w-full">
+        <option value="standard">Standard (48–72h)</option>
+        <option value="sameday">Same-day (+25%)</option>
+        <option value="express">Express (+100%)</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-4">
+      <label><input id="roundtrip" type="checkbox"> Round trip</label>
+      <label><input id="backhaul20" type="checkbox"> Backhaul discount (−20%)</label>
+    </div>
+    <button id="calcBtn" class="btn">Calculate</button>
+  </div>
+
+  <div id="result" class="mt-6 p-4 bg-white rounded shadow"></div>
 
   <script>
-    // ---------- Helpers ----------
-    const byId = (id) => document.getElementById(id);
-    const fmtM = (n) => `${(Math.round(n * 10) / 10).toFixed(1)}M ISK`;
-    const parseISK = (s) => {
-      if (!s) return 0;
-      const t = s.toString().trim().toLowerCase();
-      const m = t.endsWith('b') ? 1e9 : t.endsWith('m') ? 1e6 : t.endsWith('k') ? 1e3 : 1;
-      const v = parseFloat(t.replace(/[^0-9.\-]/g, '')) * m;
-      return isNaN(v) ? 0 : v;
-    };
-
-    // ---------- Limits & Hidden Rates (not shown in UI) ----------
-    const LIMITS = {
-      BRDST: { COLLIM: 1.5e9, VOLLIM: 50000, MIN: 20 },
-      FREIGHTER: { COLLIM: 1e9,  VOLLIM: 350000, MIN: 30 },
-    };
-
-    const HIDDEN_RATES = {
-      BRDST: { HS: 3, LS: 6 }, // M ISK per jump
-      FREIGHTER: { HS: 4 }     // HS only
-    };
-
-    const SPEED_FACTOR = { standard: 1, sameday: 1.25, express: 2 };
-
-    <script>
-      function calc() {
-        const hs = Number(document.getElementById("hsJumps").value || 0);
-        const ls = Number(document.getElementById("lsJumps").value || 0);
-        const jumps = hs + ls;
-    
-        const resultEl = document.getElementById("result");
-        if (jumps === 0) {
-          resultEl.innerHTML = "<div class='text-red-600'>You must enter jumps.</div>";
-          return null;
-        }
-    
-        // ejemplo: 3M por HS + 6M por LS
-        const price = hs * 3 + ls * 6;
-    
-        resultEl.innerHTML = `<div class="text-xl font-bold">${price}M ISK</div>
-          <div class="text-sm">HS: ${hs} · LS/NS: ${ls} · Total jumps: ${jumps}</div>`;
-    
-        return { price, hs, ls, jumps };
-      }
-    
-      window.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("calcBtn").onclick = () => calc();
-      });
-  </script>
-
-
-      // Render
-      byId('result').innerHTML = `
-        <div class="text-3xl font-extrabold mb-1" style="color:var(--hx-blue)">${fmtM(total)}</div>
-        <div class="text-sm mb-1 text-slate-800">Jumps: <strong>${jumps}</strong> (HS ${hs} · LS/NS ${ls})</div>
-        <div class="text-sm mb-3 text-slate-800">Speed: <span class="font-semibold capitalize">${speed.replace('sameday','same-day')}</span> · ${roundtrip?'Round trip (backhaul ' + (backhaul20?'-20%':'no') + ')':'One-way'}</div>
-        <div class="text-slate-800">Leg price: <strong>${fmtM(legM)}</strong> ${roundtrip?`· Outbound: ${fmtM(outbound)} · Return: ${fmtM(inbound)}`:''}</div>
-      `;
-
-      byId('notices').innerHTML = notices.length
-        ? notices.map(n => `<li class="text-rose-700">${n}</li>`).join('')
-        : '<li class="text-emerald-700">All inputs within limits.</li>';
-
-      return { origin, destination, ship, volume, collateral, hs, ls, jumps, speed, roundtrip, backhaul20, total, legM, outbound, inbound };
+    function parseISK(val) {
+      if (!val) return 0;
+      val = val.toLowerCase().replace(/\s/g,'');
+      let mult = 1;
+      if (val.endsWith('b')) mult = 1e9;
+      else if (val.endsWith('m')) mult = 1e6;
+      else if (val.endsWith('k')) mult = 1e3;
+      return parseFloat(val.replace(/[^0-9.]/g,'')) * mult || 0;
     }
 
-    document.addEventListener('DOMContentLoaded', function(){
-      const calcBtn = document.getElementById('calcBtn');
-      const copyBtn = document.getElementById('copyBtn');
-      const statusEl = byId('status');
-      const resultEl = byId('result');
-      const noticesEl = byId('notices');
+    function calc() {
+      const hs = Number(document.getElementById('hsJumps').value || 0);
+      const ls = Number(document.getElementById('lsJumps').value || 0);
+      const jumps = hs + ls;
+      const ship = document.getElementById('ship').value;
+      const speed = document.getElementById('speed').value;
+      const roundtrip = document.getElementById('roundtrip').checked;
+      const backhaul = document.getElementById('backhaul20').checked;
 
-      if (calcBtn) {
-        calcBtn.addEventListener('click', async () => {
-          try {
-            statusEl.textContent = 'Calculating…';
-            const st = await calc();
-            statusEl.textContent = st ? 'Calculated ✔' : 'Check inputs';
-            setTimeout(() => (statusEl.textContent = ''), 1500);
-          } catch (e) {
-            console.error(e);
-            statusEl.textContent = 'Error ❌';
-            resultEl.innerHTML = '<div class="text-rose-700">Unexpected error while calculating.</div>';
-            noticesEl.innerHTML = '<li class="text-rose-700">Open the console for details.</li>';
-          }
-        });
-      }
+      // tarifas ocultas
+      const rates = {
+        BRDST: {HS:3, LS:6, MIN:20},
+        FREIGHTER: {HS:4, MIN:30}
+      };
+      const speedFactor = {standard:1, sameday:1.25, express:2};
 
-      if (copyBtn) {
-        copyBtn.addEventListener('click', async () => {
-          try {
-            const st = await calc();
-            if (!st) return;
-            const lines = [
-              `Subject: Quote – Hyperline Express`,
-              ``,
-              `Route: ${st.origin} → ${st.destination}${st.roundtrip ? ' → ' + st.origin : ''}`,
-              `Ship: ${st.ship === 'BRDST' ? 'BR/DST' : 'Freighter'} · Speed: ${st.speed}`,
-              `Volume: ${st.volume.toLocaleString()} m³ · Collateral: ${st.collateral.toLocaleString()} ISK`,
-              `Jumps: ${st.jumps} (HS ${st.hs} · LS/NS ${st.ls})`,
-              ``,
-              `Price: ${fmtM(st.total)}${st.roundtrip ? ` (Outbound ${fmtM(st.outbound)} + Return ${fmtM(st.inbound)})` : ''}`,
-              ``,
-              `Terms: Standard 48–72h · Same-day +25% (availability) · Express +100% (on request).`,
-              `For recurring or high‑volume contracts, contact us for custom pricing.`
-            ];
-            await navigator.clipboard.writeText(lines.join('
-'));
-            statusEl.textContent = 'Quote copied to clipboard';
-            setTimeout(() => (statusEl.textContent = ''), 1500);
-          } catch (e) {
-            console.error(e);
-            statusEl.textContent = 'Copy failed ❌';
-          }
-        });
+      let leg = 0;
+      if (ship === "BRDST") {
+        leg = hs*rates.BRDST.HS + ls*rates.BRDST.LS;
+        leg = Math.max(leg, rates.BRDST.MIN);
+      } else {
+        if (ls>0) {
+          document.getElementById('result').innerHTML = "<span class='text-red-600'>Freighter is HS only.</span>";
+          return;
+        }
+        leg = hs*rates.FREIGHTER.HS;
+        leg = Math.max(leg, rates.FREIGHTER.MIN);
       }
-    });
-      if (!st) return;
-      const lines = [
-        `Subject: Quote – Hyperline Express`,
-        ``,
-        `Route: ${st.origin} → ${st.destination}${st.roundtrip ? ' → ' + st.origin : ''}`,
-        `Ship: ${st.ship === 'BRDST' ? 'BR/DST' : 'Freighter'} · Speed: ${st.speed}`,
-        `Volume: ${st.volume.toLocaleString()} m³ · Collateral: ${st.collateral.toLocaleString()} ISK`,
-        `Jumps: ${st.jumps} (HS ${st.hs} · LS/NS ${st.ls})`,
-        ``,
-        `Price: ${fmtM(st.total)}${st.roundtrip ? ` (Outbound ${fmtM(st.outbound)} + Return ${fmtM(st.inbound)})` : ''}`,
-        ``,
-        `Terms: Standard 48–72h · Same-day +25% (availability) · Express +100% (on request).`,
-        `For recurring or high‑volume contracts, contact us for custom pricing.`
-      ];
-      await navigator.clipboard.writeText(lines.join('
-'));
-      byId('status').textContent = 'Quote copied to clipboard';
-      setTimeout(() => (byId('status').textContent = ''), 1500);
-    });
+      leg *= speedFactor[speed];
+
+      let total = leg;
+      if (roundtrip) total += backhaul ? leg*0.8 : leg;
+
+      document.getElementById('result').innerHTML = `
+        <div class="text-xl font-bold">${total.toFixed(1)}M ISK</div>
+        <div class="text-sm text-gray-700">
+          HS ${hs} · LS/NS ${ls} · Speed: ${speed} · ${roundtrip?'Round trip':''}
+        </div>`;
+    }
+
+    document.getElementById('calcBtn').onclick = calc;
   </script>
 </body>
 </html>
