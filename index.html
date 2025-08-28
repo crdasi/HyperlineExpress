@@ -220,47 +220,32 @@
 
     const SPEED_FACTOR = { standard: 1, sameday: 1.25, express: 2 };
 
-    async function calc() {
-      const origin = byId('origin').value || '';
-      const destination = byId('destination').value || '';
-      const ship = byId('ship').value; // BRDST / FREIGHTER
-      const volume = Number(byId('volume').value || 0);
-      const collateral = parseISK(byId('collateral').value || '');
-      const hs = Number(byId('hsJumps').value || 0);
-      const ls = Number(byId('lsJumps').value || 0);
-      const jumps = hs + ls;
-      const speed = byId('speed').value;
-      const roundtrip = byId('roundtrip')?.checked || false;
-      const backhaul20 = byId('backhaul20')?.checked || false;
-
-      const notices = [];
-      const lim = LIMITS[ship];
-      if (volume > lim.VOLLIM) notices.push(`Volume exceeds ${lim.VOLLIM.toLocaleString()} m³ limit for ${ship}.`);
-      if (collateral > lim.COLLIM) notices.push(`Collateral exceeds ${(lim.COLLIM/1e9)}B ISK limit for ${ship}.`);
-      if (ship === 'FREIGHTER' && ls > 0) notices.push('Freighter is HS-only. LS/NS jumps not allowed.');
-      if (jumps === 0) notices.push('Enter at least one jump.');
-
-      // Pricing per leg (in M ISK)
-      let legM = 0;
-      if (ship === 'BRDST') {
-        legM = hs * HIDDEN_RATES.BRDST.HS + ls * HIDDEN_RATES.BRDST.LS;
-      } else {
-        if (ls > 0) {
-          // Abort: cannot price
-          byId('result').innerHTML = `<div class="text-rose-700">Freighter pricing unavailable: route includes LS/NS jumps.</div>`;
-          byId('notices').innerHTML = notices.map(n=>`<li class="text-rose-700">${n}</li>`).join('');
-          return;
+    <script>
+      function calc() {
+        const hs = Number(document.getElementById("hsJumps").value || 0);
+        const ls = Number(document.getElementById("lsJumps").value || 0);
+        const jumps = hs + ls;
+    
+        const resultEl = document.getElementById("result");
+        if (jumps === 0) {
+          resultEl.innerHTML = "<div class='text-red-600'>You must enter jumps.</div>";
+          return null;
         }
-        legM = jumps * HIDDEN_RATES.FREIGHTER.HS;
+    
+        // ejemplo: 3M por HS + 6M por LS
+        const price = hs * 3 + ls * 6;
+    
+        resultEl.innerHTML = `<div class="text-xl font-bold">${price}M ISK</div>
+          <div class="text-sm">HS: ${hs} · LS/NS: ${ls} · Total jumps: ${jumps}</div>`;
+    
+        return { price, hs, ls, jumps };
       }
+    
+      window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("calcBtn").onclick = () => calc();
+      });
+  </script>
 
-      // Minimums + speed
-      legM = Math.max(legM, lim.MIN);
-      legM *= (SPEED_FACTOR[speed] || 1);
-
-      const outbound = legM;
-      const inbound = roundtrip ? (backhaul20 ? legM * 0.8 : legM) : 0;
-      const total = outbound + inbound;
 
       // Render
       byId('result').innerHTML = `
