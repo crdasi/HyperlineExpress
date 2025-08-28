@@ -277,15 +277,58 @@
       return { origin, destination, ship, volume, collateral, hs, ls, jumps, speed, roundtrip, backhaul20, total, legM, outbound, inbound };
     }
 
-    document.getElementById('calcBtn').addEventListener('click', async () => {
-      byId('status').textContent = 'Calculating…';
-      const st = await calc();
-      byId('status').textContent = st ? 'Calculated ✔' : 'Check inputs';
-      setTimeout(() => (byId('status').textContent = ''), 1500);
-    });
+    document.addEventListener('DOMContentLoaded', function(){
+      const calcBtn = document.getElementById('calcBtn');
+      const copyBtn = document.getElementById('copyBtn');
+      const statusEl = byId('status');
+      const resultEl = byId('result');
+      const noticesEl = byId('notices');
 
-    document.getElementById('copyBtn').addEventListener('click', async () => {
-      const st = await calc();
+      if (calcBtn) {
+        calcBtn.addEventListener('click', async () => {
+          try {
+            statusEl.textContent = 'Calculating…';
+            const st = await calc();
+            statusEl.textContent = st ? 'Calculated ✔' : 'Check inputs';
+            setTimeout(() => (statusEl.textContent = ''), 1500);
+          } catch (e) {
+            console.error(e);
+            statusEl.textContent = 'Error ❌';
+            resultEl.innerHTML = '<div class="text-rose-700">Unexpected error while calculating.</div>';
+            noticesEl.innerHTML = '<li class="text-rose-700">Open the console for details.</li>';
+          }
+        });
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          try {
+            const st = await calc();
+            if (!st) return;
+            const lines = [
+              `Subject: Quote – Hyperline Express`,
+              ``,
+              `Route: ${st.origin} → ${st.destination}${st.roundtrip ? ' → ' + st.origin : ''}`,
+              `Ship: ${st.ship === 'BRDST' ? 'BR/DST' : 'Freighter'} · Speed: ${st.speed}`,
+              `Volume: ${st.volume.toLocaleString()} m³ · Collateral: ${st.collateral.toLocaleString()} ISK`,
+              `Jumps: ${st.jumps} (HS ${st.hs} · LS/NS ${st.ls})`,
+              ``,
+              `Price: ${fmtM(st.total)}${st.roundtrip ? ` (Outbound ${fmtM(st.outbound)} + Return ${fmtM(st.inbound)})` : ''}`,
+              ``,
+              `Terms: Standard 48–72h · Same-day +25% (availability) · Express +100% (on request).`,
+              `For recurring or high‑volume contracts, contact us for custom pricing.`
+            ];
+            await navigator.clipboard.writeText(lines.join('
+'));
+            statusEl.textContent = 'Quote copied to clipboard';
+            setTimeout(() => (statusEl.textContent = ''), 1500);
+          } catch (e) {
+            console.error(e);
+            statusEl.textContent = 'Copy failed ❌';
+          }
+        });
+      }
+    });
       if (!st) return;
       const lines = [
         `Subject: Quote – Hyperline Express`,
